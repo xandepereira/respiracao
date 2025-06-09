@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Controle Respiratório</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .circle {
+      width: 150px;
+      height: 150px;
+      max-width: 80vw;
+      max-height: 80vw;
+      border-radius: 50%;
+      background-color: #4CAF50;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 1.3rem;
+      font-weight: bold;
+      transition: all 5s ease-in-out;
+      user-select: none;
+    }
+
+    .expand {
+      transform: scale(1.7);
+      background-color: #66bb6a;
+    }
+
+    .contract {
+      transform: scale(1);
+      background-color: #4CAF50;
+    }
+
+    .controls {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      width: 200px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #2196F3;
+      color: white;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #1976D2;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="circle" id="breathCircle">Iniciar</div>
+
+  <div class="controls">
+    <label>
+      Velocidade (segundos por fase):
+      <input type="range" id="speedControl" min="2" max="10" value="5" step="1">
+    </label>
+    <span id="speedValue">5</span>s
+    <button id="toggleBtn">Iniciar</button>
+  </div>
+
+  <div class="status" id="statusText">Clique em "Iniciar" para começar.</div>
+
+  <script>
+    const circle = document.getElementById("breathCircle");
+    const toggleBtn = document.getElementById("toggleBtn");
+    const speedControl = document.getElementById("speedControl");
+    const speedValue = document.getElementById("speedValue");
+    const statusText = document.getElementById("statusText");
+
+    let intervalId = null;
+    let isRunning = false;
+
+    function updateSpeedDisplay() {
+      speedValue.textContent = speedControl.value;
+    }
+
+    function breathe() {
+      const duration = parseInt(speedControl.value) * 1000;
+
+      // Inspire
+      circle.textContent = "Inspire";
+      circle.classList.remove("contract");
+      circle.classList.add("expand");
+      statusText.textContent = "Inspire profundamente...";
+      
+      setTimeout(() => {
+        // Espire
+        circle.textContent = "Espire";
+        circle.classList.remove("expand");
+        circle.classList.add("contract");
+        statusText.textContent = "Expire lentamente...";
+      }, duration);
+
+      setTimeout(() => {
+        // Mantém contraído antes de reiniciar
+        statusText.textContent = "Preparando próximo ciclo...";
+      }, duration * 1.8);
+    }
+
+    function startBreathing() {
+      if (intervalId) clearInterval(intervalId);
+      const cycleTime = parseInt(speedControl.value) * 2000;
+      intervalId = setInterval(breathe, cycleTime);
+      breathe(); // primeira execução imediata
+      statusText.textContent = "Respiração iniciada.";
+    }
+
+    function stopBreathing() {
+      if (intervalId) clearInterval(intervalId);
+      circle.textContent = "Pausado";
+      circle.classList.remove("expand", "contract");
+      statusText.textContent = "Respiração pausada.";
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      isRunning = !isRunning;
+      if (isRunning) {
+        toggleBtn.textContent = "Pausar";
+        startBreathing();
+      } else {
+        toggleBtn.textContent = "Continuar";
+        stopBreathing();
+      }
+    });
+
+    speedControl.addEventListener("input", () => {
+      updateSpeedDisplay();
+      if (isRunning) {
+        startBreathing(); // Reinicia com nova velocidade
+      }
+    });
+
+    updateSpeedDisplay();
+  </script>
+
+</body>
+</html>
